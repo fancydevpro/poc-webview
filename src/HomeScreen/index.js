@@ -9,7 +9,7 @@ import {
 const HomeScreen = ({ navigation, route }) => {
 
     const onPressedWebView = () => {
-        //navigation.navigate('WebView');
+        navigation.navigate('Webview');
     }
 
     return (
