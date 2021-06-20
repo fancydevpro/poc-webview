@@ -9,29 +9,59 @@ import {
 import { WebView } from 'react-native-webview';
 const WebviewScreen = ({ navigation, route }) => {
   const webView = useRef();
+  const cookieRef = useRef({value: ''});
   const weburl = 'http://192.168.1.30/webview.php'
   //const weburl = 'https://socialattache.com/'
   
   // handle message from webpage
   const onBridgeMessage = (event) => {
-    const { data } = event.nativeEvent;
-    console.log(data);
-    Alert.alert('PocWeb', data);
+    const { data } = event.nativeEvent;    
+    const jsonData = JSON.parse(data);
+    console.log(jsonData);    
+    if(jsonData.type == 'message') {
+      Alert.alert('PocWeb', jsonData.value);
+    } else if(jsonData.type == 'cookie'){   
+      cookieRef.current.value = jsonData.value;
+      Alert.alert('Cookie from the webview', jsonData.value);
+    }
   }
 
+  // get cookie 
+  const getCookie = () => {
+    const javascriptCodeToSend = `
+      window.ReactNativeWebView.postMessage(JSON.stringify({type: 'cookie', value: document.cookie}));
+      true;
+    `;
+    webView.current.injectJavaScript(javascriptCodeToSend);
+  }
   // button handler to show cookie
   const onPressedShowCookie = () => {
-    const data = { type: 'get_cookie'};
-    sendMessage(data);
+    getCookie();
+  }
+
+  const requestAjaxCallWithCookie = async (cookie) => {
+    const response = await fetch('http://192.168.1.30/login.php', {
+      headers: {
+        'cookie': cookie
+      }
+    });
+    const jsonData = await response.json();
+    console.log(jsonData);
+    Alert.alert('Ajax response', JSON.stringify(jsonData));
   }
   // button handler to ajax call
   const onPressedAjaxCall = () => {
-    const data = { type: 'ajax_call'};
-    sendMessage(data);
+    const cookie = cookieRef.current.value;
+    if(cookie == '') {
+      Alert.alert('Please get the cookie first');
+    } else {
+      // ajax call
+      requestAjaxCallWithCookie(cookie);
+    }
   }
   // button handler to send message to webpage
   const onPressedSend = () => {
-    const data = { type: 'message', text: 'This is message from mobile app.'};
+    const data = { type: 'message', value: 'This is message from mobile app.'};
     sendMessage(data);
   }
 
@@ -48,6 +78,7 @@ const WebviewScreen = ({ navigation, route }) => {
       <View style={styles.container}>
           <WebView
             ref={webView}
+            onLoad={() => getCookie()}
             source={{
               uri: weburl,
               // headers: {

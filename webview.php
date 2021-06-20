@@ -9,10 +9,15 @@
 <textarea style="height: 50%; width: 100%;" readonly></textarea>
 <?php
 	$cookie_name="user";
-	if(isset($_COOKIE[$cookie_name])) {
-		echo "Cookie '".$cookie_name."' is set!<br>";
-		echo "Value is: ".$_COOKIE[$cookie_name];
+	if(!isset($_COOKIE[$cookie_name])) {
+		setcookie($cookie_name, "john1234", time() + (864300 * 30), "/") ;
 	}
+	else {
+		//echo "Cookie '".$cookie_name."' is set!<br>";
+		//echo "Value is: ".$_COOKIE[$cookie_name];
+	}
+
+
 ?>
 
 <script>
@@ -21,16 +26,17 @@ var log = document.querySelector("textarea");
 document.querySelector("button").onclick = function() {
     console.log("Send post message");
     logMessage("This is message from web");
-    window.ReactNativeWebView.postMessage("This is message from web");
+	var data = { type: "message", value: "This is message from web"};
+    window.ReactNativeWebView.postMessage(JSON.stringify(data));
 }
 
 window.addEventListener("message", function(event) {
     console.log("Received post message", event);
 	const message = event.data;
 	if(message.type == 'message') {
-	    logMessage(message.text);
+	    logMessage(message.value);
 	}
-	else if(message.type == 'ajax_call') {
+/*	else if(message.type == 'ajax_call') {
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange = function() {
 		  if (this.readyState == 4 && this.status == 200) {
@@ -43,10 +49,7 @@ window.addEventListener("message", function(event) {
 		xmlhttp.open("POST", "login.php", true);
 		xmlhttp.send();
 	}
-	else if(message.type == 'get_cookie') {
-		if(document.cookie != '')
-			logMessage(document.cookie);
-	}
+*/
 }, false);
 
 function logMessage(message) {
