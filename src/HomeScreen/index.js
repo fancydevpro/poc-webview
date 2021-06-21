@@ -12,8 +12,20 @@ const HomeScreen = ({ navigation, route }) => {
         navigation.navigate('Webview');
     }
 
+    const onPressedSA = () => {
+      navigation.navigate('SocialAttache');
+    }
+
     return (
         <View style={styles.container}>
+            <TouchableOpacity        
+                style={styles.buttonContainer}
+                onPress={onPressedSA}>
+                <Text
+                    style={styles.textView}>
+                    Goto SA
+                </Text>
+            </TouchableOpacity>
             <TouchableOpacity        
                 style={styles.buttonContainer}
                 onPress={onPressedWebView}>
@@ -40,6 +52,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       borderRadius: 8,
+      marginVertical: 8,
       backgroundColor: '#006efe'
   }
 });
