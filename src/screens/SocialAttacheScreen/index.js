@@ -5,6 +5,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
+  Platform,
   TouchableOpacity,
 } from 'react-native';
 import { WithLocalSvg } from 'react-native-svg';
@@ -153,6 +154,8 @@ const SocialAttacheScreen = ({ navigation, route }) => {
             //   Cookie: 'user=john; password=123456',
             // },
           }}            
+          userAgent={Platform.OS == 'ios' ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1' :
+          'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36'}
           allowsInlineMediaPlayback="true"
           onMessage={onBridgeMessage}
           javaScriptEnabled={true}
