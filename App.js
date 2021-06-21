@@ -9,7 +9,7 @@
  import React, { useEffect } from 'react';
  import { SafeAreaProvider } from 'react-native-safe-area-context';
  
- import RootNavigator from './src/RootNavigator';
+ import RootNavigator from './src/screens/RootNavigator';
  
  const App = () => {
    return (

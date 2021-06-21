@@ -10,7 +10,8 @@ const Stack = createStackNavigator();
 const DashboardScreen = ({ navigation }) => {
     return (
       <Stack.Navigator
-        initialRouteName="Home">
+        initialRouteName="SocialAttache"
+        screenOptions={{headerShown: false}}>
         <Stack.Screen
           name="Home"
           component={HomeScreen}
