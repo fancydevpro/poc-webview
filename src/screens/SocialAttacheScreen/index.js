@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { WithLocalSvg } from 'react-native-svg';
 import { WebView } from 'react-native-webview';
@@ -53,42 +54,77 @@ const SocialAttacheScreen = ({ navigation, route }) => {
   //const weburl = 'https://www.facebook.com/'  
 
   const [mainWebviewUrl, setMainWebviewUrl] = useState(SocialAttachUrl);
+  const [lastMainWebviweUrl, setLastMainWebviewUrl] = useState(SocialAttachUrl);
+  
   const [socialWebviewurl, setSocialWebviewurl] = useState(FacebookUrl);
-
+  const [lastSocialWebviweUrl, setLastSocialWebviewUrl] = useState(SocialAttachUrl);
   // social attache
   const onPressedSocialAttache = () => {
     setWebviewMode(0);
-    setMainWebviewUrl(SocialAttachUrl);
+    if(webviewMode == 1)
+      setMainWebviewUrl(lastMainWebviweUrl);
   };
   // facebook
   const onPressedFacebook = () => {
     setWebviewMode(1);
-    setSocialWebviewurl(FacebookUrl);
+    if(!lastSocialWebviweUrl.includes('facebook.'))
+      setSocialWebviewurl(FacebookUrl);
+    // switching from SA
+    if(webviewMode == 0) {
+      setSocialWebviewurl(lastSocialWebviweUrl);
+    }
   };
   // instagram
   const onPressedInstagram = () => {
     setWebviewMode(1);
-    setSocialWebviewurl(InstagramUrl);
+    if(!lastSocialWebviweUrl.includes('instagram.'))
+      setSocialWebviewurl(InstagramUrl);
+    // switching from SA
+    if(webviewMode == 0) {
+      setSocialWebviewurl(lastSocialWebviweUrl);
+    }
   }
   // linkedin
   const onPressedLinkedIn = () => {
     setWebviewMode(1);
-    setSocialWebviewurl(LinkedInUrl);
+    if(!lastSocialWebviweUrl.includes('linkedin.'))
+      setSocialWebviewurl(LinkedInUrl);
+    // switching from SA
+    if(webviewMode == 0) {
+      setSocialWebviewurl(lastSocialWebviweUrl);
+    }
   }
   // pinterest
   const onPressedPinterest = () => {
     setWebviewMode(1);
-    setSocialWebviewurl(PinterestUrl);
+    if(!lastSocialWebviweUrl.includes('pinterest.'))
+      setSocialWebviewurl(PinterestUrl);
+    // switching from SA
+    if(webviewMode == 0) {
+      setSocialWebviewurl(lastSocialWebviweUrl);
+    }
+
   }
   // tiktok
   const onPressedTiktok = () => {
     setWebviewMode(1);
-    setSocialWebviewurl(TiktokUrl);
+    if(!lastSocialWebviweUrl.includes('tiktok.'))
+      setSocialWebviewurl(TiktokUrl);
+    // switching from SA
+    if(webviewMode == 0) {
+      setSocialWebviewurl(lastSocialWebviweUrl);
+    }    
   }
   // twitter
   const onPressedTwitter = () => {
     setWebviewMode(1);
-    setSocialWebviewurl(Twitterurl);
+    if(!lastSocialWebviweUrl.includes('twitter.'))
+      setSocialWebviewurl(Twitterurl);
+    // switching from SA
+    if(webviewMode == 0) {
+      setSocialWebviewurl(lastSocialWebviweUrl);
+    }
+
   }
   // forwards
   const onBackwardPressed = useCallback(() => {
@@ -119,14 +155,35 @@ const SocialAttacheScreen = ({ navigation, route }) => {
   }, [webviewMode, mainWebView, socialWebView, canGoForwardMain, canGoForwardSocial]);
   // main navigation state changed
   const onMainNavigationStateChange = (navState) => {
+    if(!navState.url.includes('http') && !navState.url.includes('https')) {
+      Linking.openURL(navState.url);
+      mainWebView.current.stopLoading();
+      return;
+    }
     setCanGoBackMain(navState.canGoBack);
     setCanGoForwardMain(navState.canGoForward);
+    if(navState.url != null)
+      setLastMainWebviewUrl(navState.url);
     console.log('Main NavState', navState.url, navState.canGoBack, navState.canGoForward);
   }
   // social navigation state changed
   const onSocialNavigationStateChange = (navState) => {
+    // open defulat browser
+    if(!navState.url.includes('http') && !navState.url.includes('https')) {
+      socialWebView.current.stopLoading();
+      Linking.openURL(navState.url);      
+      return;
+    }
+    // open defulat browser
+    if(navState.url.includes('pinterest') && navState.url.includes('#imgViewer')) {
+      socialWebView.current.stopLoading();
+      Linking.openURL(navState.url);      
+      return;
+    }
     setCanGoBackSocial(navState.canGoBack);
-    setCanGoForwardSocial(navState.canGoForward);
+    setCanGoForwardSocial(navState.url);
+    if(navState.url != null)
+      setLastSocialWebviewUrl(navState.url);
     console.log('Social NavState', navState.url, navState.canGoBack, navState.canGoForward);
   }
 
@@ -298,41 +355,47 @@ const SocialAttacheScreen = ({ navigation, route }) => {
         />}
         {
           webviewMode === 0 ?
-          <WebView
-            ref={mainWebView}
-            onLoad={() => getMainWebviewCookie()}
-            onLoadEnd={() => setLoading(false)}
-            onLoadStart={() => setLoading(true)}
-            source={{
-              uri: mainWebviewUrl,
-            }}
-            allowsInlineMediaPlayback="true"
-            onMessage={onMainWebviewBridgeMessage}
-            javaScriptEnabled={true}
-            sharedCookiesEnabled={true} 
-            thirdPartyCookiesEnabled={true}
-            onNavigationStateChange={onMainNavigationStateChange}
-          /> :
-          <WebView
-            ref={socialWebView}
-            onLoad={() => getSocialWebviewCookie()}
-            onLoadEnd={() => setLoading(false)}
-            onLoadStart={() => setLoading(true)}
-            source={{
-              uri: socialWebviewurl,
-              // headers: {
-              //   Cookie: 'user=john; password=123456',
-              // },
-            }}
-            // userAgent={Platform.OS == 'ios' ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1' :
-            // 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36'}
-            allowsInlineMediaPlayback="true"
-            onMessage={onSocialWebviewBridgeMessage}
-            javaScriptEnabled={true}
-            sharedCookiesEnabled={true} 
-            thirdPartyCookiesEnabled={true}
-            onNavigationStateChange={onSocialNavigationStateChange}
-          />
+          <View
+            style={{flex: 1}}>
+            <WebView
+              ref={mainWebView}
+              onLoad={() => getMainWebviewCookie()}
+              onLoadEnd={() => setLoading(false)}
+              onLoadStart={() => setLoading(true)}
+              source={{
+                uri: mainWebviewUrl,
+              }}
+              allowsInlineMediaPlayback="true"
+              onMessage={onMainWebviewBridgeMessage}
+              javaScriptEnabled={true}
+              sharedCookiesEnabled={true} 
+              thirdPartyCookiesEnabled={true}
+              onNavigationStateChange={onMainNavigationStateChange}
+            />
+          </View> :
+          <View
+            style={{flex: 1}}>
+            <WebView
+              ref={socialWebView}
+              onLoad={() => getSocialWebviewCookie()}
+              onLoadEnd={() => setLoading(false)}
+              onLoadStart={() => setLoading(true)}
+              source={{
+                uri: socialWebviewurl,
+                // headers: {
+                //   Cookie: 'user=john; password=123456',
+                // },
+              }}
+              // userAgent={Platform.OS == 'ios' ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1' :
+              // 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36'}
+              allowsInlineMediaPlayback="true"
+              onMessage={onSocialWebviewBridgeMessage}
+              javaScriptEnabled={true}
+              sharedCookiesEnabled={true} 
+              thirdPartyCookiesEnabled={true}
+              onNavigationStateChange={onSocialNavigationStateChange}
+            />
+          </View>
         }
 
     </SafeAreaView>
