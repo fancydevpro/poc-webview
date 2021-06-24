@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableOpacity,
 } from 'react-native';
+import { AccessToken, LoginManager, GraphRequest, GraphRequestManager } from 'react-native-fbsdk';
 import { WithLocalSvg } from 'react-native-svg';
 import { WebView } from 'react-native-webview';
 
@@ -22,6 +23,7 @@ const SocialAttachUrl = 'https://socialattache.com/';
 const FacebookUrl = 'https://www.facebook.com/';
 const TiktokUrl = 'https://www.tiktok.com/';
 
+//const TEST_LOGIN = 'http://192.168.1.30/login.php';
 const SocialAttacheScreen = ({ navigation, route }) => {
   const webView = useRef();
   const cookieRef = useRef({value: ''});
@@ -83,11 +85,42 @@ const SocialAttacheScreen = ({ navigation, route }) => {
   }
 
   const onPressedFacebook = () => {
-    setWebUrl(FacebookUrl);
+    //setWebUrl(FacebookUrl);
+    //setWebUrl('https://m.facebook.com')
+    
+    LoginManager.logInWithPermissions(["email", "public_profile"]).then(
+      result => {
+        if(result.isCancelled) {
+          if (webView.canGoBack()) {
+            webView.goBack();
+          }
+        } else {
+          AccessToken.getCurrentAccessToken().then(data => {
+            const infoRequest = new GraphRequest(
+              '/me',
+              {
+                accessToken: data.accessToken.toString(),
+                parameters: {
+                  fields: {
+                    string: 'email, name'
+                  }
+                }
+              },
+              setWebUrl('https://m.facebook.com')
+            );
+            // Start the graph request.
+            new GraphRequestManager().addRequest(infoRequest).start();
+          });
+        }
+
+      }
+    )
+  
   }
 
   const onNavigationStateChange = (navState) => {
-    console.log('NavState', navState.url);
+    var url = navState.url;
+    console.log('NavState', url);
   }
 
   return (
@@ -148,19 +181,21 @@ const SocialAttacheScreen = ({ navigation, route }) => {
         <WebView
           ref={webView}
           onLoad={() => getCookie()}
+          originWhitelist={['*']}
           source={{
             uri: weburl,
-            // headers: {
-            //   Cookie: 'user=john; password=123456',
-            // },
+            headers: {
+              Cookie: '_fbp=fb.1.1624487749385.1415309693; PHPSESSID=v86k8lsm0mfr1jqthf9u4v0ou5; ReferralURL=https%3A%2F%2Fsocialattache.com%2F; CurrencyCode=USD; CountryCode=US',
+            },
           }}            
-          userAgent={Platform.OS == 'ios' ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1' :
+          userAgent={Platform.OS == 'ios' ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1' :
           'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36'}
           allowsInlineMediaPlayback="true"
           onMessage={onBridgeMessage}
           javaScriptEnabled={true}
           sharedCookiesEnabled={true} 
           thirdPartyCookiesEnabled={true}
+          mixedContentMode="compatibility"
           onNavigationStateChange={onNavigationStateChange}
         />
     </SafeAreaView>

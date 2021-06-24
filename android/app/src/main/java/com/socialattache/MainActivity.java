@@ -1,4 +1,4 @@
-package com.pocwebview;
+package com.socialattache;
 
 import com.facebook.react.ReactActivity;
 
